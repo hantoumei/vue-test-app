@@ -16,6 +16,4 @@
       .footer__copyright © EIEN. {{ new Date().getFullYear() }}
 </template>
 
-<style lang="scss" scoped>
-  @use "./Footer.scss";
-</style>
+<style lang="scss" scoped src="./Footer.scss"></style>

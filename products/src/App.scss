@@ -96,3 +96,25 @@ main {
     color: #e8a725;
   }
 }
+
+mark {
+  background-color: #15c594;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.p-paginator {
+  --p-paginator-background: transparent;
+  --p-paginator-nav-button-hover-background: #282c34;
+  --p-paginator-color: #FFFFFF;
+  --p-paginator-nav-button-color: #FFFFFF;
+  --p-paginator-nav-button-hover-color: #FFFFFF;
+  --p-select-background: #282c34;
+  --p-select-border-color: transparent;
+}
+
+.p-select-overlay {
+  --p-select-overlay-background: #282c34;
+  --p-select-overlay-border-color: transparent;
+}

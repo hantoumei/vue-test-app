@@ -4,7 +4,7 @@
   header.header
     .container
       .header__wrapper
-        router-link.header__navigation-link(to="/" aria-label="To main page")
+        router-link(to="/" aria-label="To main page")
           img.header__logo(src="/images/logo.png" alt="EIEN Logo")
         
         nav.header__navigation
@@ -16,6 +16,4 @@
               router-link.header__navigation-link.link(to="/products") Products
 </template>
 
-<style lang="scss" scoped>
-  @use "./Header.scss";
-</style>
+<style lang="scss" scoped src="./Header.scss"></style>

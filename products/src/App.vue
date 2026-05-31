@@ -7,6 +7,4 @@
     router-view
 </template>
 
-<style lang="scss">
-  @use "./App.scss";
-</style>
+<style lang="scss" src="./App.scss"></style>

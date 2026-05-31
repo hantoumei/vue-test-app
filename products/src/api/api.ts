@@ -1,12 +1,14 @@
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api";
 import { ProductsListSchema, type ORDER, type Product } from "./api.types";
+import { SERVER_ERRORS } from "@/constants/errors";
 
 export async function getProductsList(
   page: number,
   limit: number,
   sortBy: string,
   order: ORDER,
-  filters: Record<string, string>
+  filters: Record<string, string>,
+  search?: string
 ): Promise<Product[]> {
   const url = new URL(`${API_BASE_URL}${API_ENDPOINTS.PRODUCTS.GET}`);
   url.searchParams.append('page', page.toString());
@@ -18,8 +20,17 @@ export async function getProductsList(
     url.searchParams.append(key, value);
   }
 
+  if (search) {
+    url.searchParams.append('search', search);
+  }
+
   const response = await fetch(url);
-  if (!response.ok) throw new Error('Network error: ' + response.statusText);
+  if (!response.ok) {
+    if (response.status === SERVER_ERRORS.NOT_FOUND) {
+      return []; // Return empty array if no products found
+    }
+    throw new Error('Network error: ' + response.status);
+  }
   
   const rawData = await response.json();
   const validation = ProductsListSchema.safeParse(rawData);

@@ -22,21 +22,35 @@
   right: 40px;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
   background-color: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100%;
+}
+
+.search__button--search {
+  border-left: 1px solid #ccc;
+  font-size: 16px;
+  right: 0;
+  padding: 0 18px 0 10px;
+  border-radius: 0 2px 2px 0;
+
+  &:hover,
+  &:focus-visible {
+    background-color: #404653;
+  }
+}
+
+.search__button--close {
+  right: 105px;
+  width: 40px;
+  height: 40px;
 }
 
 .search__icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 25px;
   height: 25px;
 }
