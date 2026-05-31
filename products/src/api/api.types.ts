@@ -16,3 +16,5 @@ export const ProductSchema = z.object({
 export const ProductsListSchema = z.array(ProductSchema);
 
 export type Product = z.infer<typeof ProductSchema>;
+
+export type ORDER = 'asc' | 'desc';
