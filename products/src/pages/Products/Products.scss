@@ -8,3 +8,16 @@
 .products__paginator {
   grid-column: 1 / -1;
 }
+
+.products__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.products__no-results {
+  text-align: center;
+  font-size: 18px;
+  color: #8d96a9;
+}

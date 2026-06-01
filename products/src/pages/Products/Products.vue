@@ -3,31 +3,36 @@
   import Search from '@/ui/Search/Search.vue';
   import ProductCard from '@/ui/ProductCard/ProductCard.vue';
   import { getProductsList } from '@/api/api';
-  import type { ORDER, Product } from '@/api/api.types';
+  import { type Product } from '@/api/api.types';
   import Paginator, { type PageState } from 'primevue/paginator';
+  import CheckboxGroup from '@/ui/CheckboxGroup/CheckboxGroup.vue';
+  import Select from 'primevue/select';
+  import Loader from '@/ui/Loader/Loader.vue';
   import { watch } from 'vue';
+  import { FILTERS_OPTIONS, ORDER, SORT_BY, SORTING_OPTIONS } from '@/constants/shared';
 
   // Products
   const products = ref<Product[]>([]);
-  const isLoading = ref(false);
+  const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
 
   // Pagination
-  const page = ref(0);
-  const limit = ref(10);
-  const totalRecords = ref(100); // Hardcoded for now, ideally should come from API response
+  const page = ref<number>(0);
+  const limit = ref<number>(10);
+  const totalRecords = ref<number>(100); // Hardcoded for now, since API doesn't return total count
 
   // FIlters
   const filters = ref<Record<string, string>>({});
+  const filterOptions = ref<typeof FILTERS_OPTIONS>(FILTERS_OPTIONS);
 
   // Sorting
-  const sortBy = ref('createdAt');
-  const order = ref<ORDER>('desc');
+  const sortBy = ref<SORT_BY>(SORT_BY.CREATED_AT);
+  const order = ref<ORDER>(ORDER.DESC);
 
   // Search
-  const search = ref('');
+  const search = ref<string>('');
 
-  const loadProducts = async () => {
+  const loadProducts = async (): Promise<void> => {
     isLoading.value = true;
     error.value = null;
     try {
@@ -47,9 +52,25 @@
     }
   };
 
-  const onPageChange = (event: PageState) => {
+  const onPageChange = (event: PageState): void => {
     page.value = event.page;
     limit.value = event.rows;
+  };
+
+  const onFiltersChange = (selectedValues: string[]): void => {
+    filters.value = {};
+    page.value = 0;
+    if (selectedValues.includes('new') && selectedValues.includes('used')) return;
+    if (selectedValues.includes('new')) filters.value['productIsNew'] = 'true';
+    if (selectedValues.includes('used')) filters.value['productIsNew'] = 'false';
+  };
+
+  const onSortingChange = (
+    event: { value: typeof SORTING_OPTIONS[number]['value'] }
+  ): void => {
+    const [newSortBy, newOrder] = Object.entries(event.value)[0]!;
+    sortBy.value = newSortBy as SORT_BY;
+    order.value = newOrder as ORDER;
   };
 
   onMounted(() => {
@@ -61,14 +82,24 @@
 
 <template lang="pug">
   .products
-    Search(
-      :searchName="'Search products'"
-      :placeholder="'Type product name...'"
-      @update:search="search = $event; page = 0"
-    )
-    
+    .products__controls
+      Search(
+        :searchName="'Search products'"
+        :placeholder="'Type product name or keywords...'"
+        @update:search="search = $event; page = 0"
+      )
+      CheckboxGroup(:options="filterOptions" @update:modelValue="onFiltersChange")
+      Select(
+        :options="SORTING_OPTIONS"
+        option-label="label"
+        option-value="value"
+        placeholder="Sort by"
+        @change="onSortingChange"
+      )
+
     .products__content
-      p(v-if="isLoading") Loading products...
+      div(v-if="isLoading")
+        Loader
       p(v-else-if="error" class="products__error") {{ error }}
       
       .products__list(v-else-if="products.length")
@@ -83,7 +114,7 @@
           @page="onPageChange"
         )
           
-      p(v-else) No products found
+      p.products__no-results(v-else) No products found
 </template>
 
 <style lang="scss" scoped src="./Products.scss"></style>

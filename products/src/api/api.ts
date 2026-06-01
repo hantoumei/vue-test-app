@@ -1,6 +1,7 @@
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api";
-import { ProductsListSchema, type ORDER, type Product } from "./api.types";
+import { ProductsListSchema, type Product } from "./api.types";
 import { SERVER_ERRORS } from "@/constants/errors";
+import type { ORDER } from "@/constants/shared";
 
 export async function getProductsList(
   page: number,

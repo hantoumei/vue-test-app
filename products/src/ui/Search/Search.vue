@@ -14,7 +14,7 @@
     }
   });
 
-  const searchTerm = ref('')
+  const searchTerm = ref<string>('')
 </script>
 
 <template lang="pug">

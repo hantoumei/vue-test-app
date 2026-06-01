@@ -6,6 +6,7 @@
   .home
     h1.home__title Welcome to My Product Store
     p.home__subtitle Discover our amazing products!
+    img.home__image(src="/images/home.png" alt="Shopping illustration")
     Button(variant="primary" size="large" url="/products") Shop Now
 </template>
 

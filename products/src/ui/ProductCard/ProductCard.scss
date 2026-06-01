@@ -51,3 +51,26 @@
   color: #8d96a9;
 }
 
+.product-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.product-card__badge {
+  font-size: 12px;
+  padding: 3px 8px;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.product-card__badge--date {
+  color: #8d96a9;
+  background-color: #3a3f4b;
+}
+
+.product-card__badge--condition {
+  background-color: #ff6f61;
+  color: #fff;
+}
