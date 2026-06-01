@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import Search from '@/ui/Search/Search.vue';
   import ProductCard from '@/ui/ProductCard/ProductCard.vue';
-  import { getProductsList } from '@/api/api';
+  import { getProductsCount, getProductsList } from '@/api/api';
   import { type Product } from '@/api/api.types';
   import Paginator, { type PageState } from 'primevue/paginator';
   import CheckboxGroup from '@/ui/CheckboxGroup/CheckboxGroup.vue';
@@ -10,6 +11,9 @@
   import Loader from '@/ui/Loader/Loader.vue';
   import { watch } from 'vue';
   import { FILTERS_OPTIONS, ORDER, SORT_BY, SORTING_OPTIONS } from '@/constants/shared';
+
+  const router = useRouter();
+  const route = useRoute();
 
   // Products
   const products = ref<Product[]>([]);
@@ -19,18 +23,55 @@
   // Pagination
   const page = ref<number>(0);
   const limit = ref<number>(10);
-  const totalRecords = ref<number>(100); // Hardcoded for now, since API doesn't return total count
+  const totalRecords = ref<number>(0);
 
   // FIlters
+  const selectedFilters = ref<string[]>(['new', 'used']);
   const filters = ref<Record<string, string>>({});
-  const filterOptions = ref<typeof FILTERS_OPTIONS>(FILTERS_OPTIONS);
 
   // Sorting
   const sortBy = ref<SORT_BY>(SORT_BY.CREATED_AT);
   const order = ref<ORDER>(ORDER.DESC);
 
+  const sortingValue = computed(() => ({ [sortBy.value]: order.value }));
+
   // Search
   const search = ref<string>('');
+
+  const updateUrl = (): void => {
+    const query: Record<string, string> = {};
+    if (page.value > 0) query.page = String(page.value + 1);
+    if (limit.value !== 10) query.limit = String(limit.value);
+    if (sortBy.value !== SORT_BY.CREATED_AT || order.value !== ORDER.DESC) {
+      query.sortBy = sortBy.value;
+      query.order = order.value;
+    }
+    if (search.value) query.search = search.value;
+
+    const hasNew = selectedFilters.value.includes('new');
+    const hasUsed = selectedFilters.value.includes('used');
+    if (selectedFilters.value.length > 0 && !(hasNew && hasUsed)) {
+      query.filters = selectedFilters.value.join(',');
+    }
+    
+    router.replace({ query });
+  };
+
+  const initFromUrl = (): void => {
+    const q = route.query;
+    if (q.page) page.value = parseInt(q.page as string) - 1;
+    if (q.limit) limit.value = parseInt(q.limit as string);
+    if (q.sortBy) sortBy.value = q.sortBy as SORT_BY;
+    if (q.order) order.value = q.order as ORDER;
+    if (q.search) search.value = q.search as string;
+    if (q.filters) {
+      const filterValues = (q.filters as string).split(',');
+      selectedFilters.value = filterValues;
+      onFiltersChange(filterValues);
+    } else {
+      onFiltersChange(['new', 'used']);
+    }
+  };
 
   const loadProducts = async (): Promise<void> => {
     isLoading.value = true;
@@ -41,6 +82,11 @@
         limit.value,
         sortBy.value,
         order.value,
+        filters.value,
+        search.value
+      );
+      totalRecords.value = await getProductsCount(
+        page.value + 1,
         filters.value,
         search.value
       );
@@ -58,6 +104,7 @@
   };
 
   const onFiltersChange = (selectedValues: string[]): void => {
+    selectedFilters.value = selectedValues;
     filters.value = {};
     page.value = 0;
     if (selectedValues.includes('new') && selectedValues.includes('used')) return;
@@ -66,18 +113,28 @@
   };
 
   const onSortingChange = (
-    event: { value: typeof SORTING_OPTIONS[number]['value'] }
+    value: typeof SORTING_OPTIONS[number]['value']
   ): void => {
-    const [newSortBy, newOrder] = Object.entries(event.value)[0]!;
+    const [newSortBy, newOrder] = Object.entries(value)[0]!;
     sortBy.value = newSortBy as SORT_BY;
     order.value = newOrder as ORDER;
+    page.value = 0;
+  };
+
+  const onCheckboxChange = (val: string[]): void => {
+    selectedFilters.value = val;
+    onFiltersChange(val);
   };
 
   onMounted(() => {
+    initFromUrl();
     loadProducts();
   });
 
-  watch([page, limit, sortBy, order, filters, search], loadProducts);
+  watch([page, limit, sortBy, order, filters, search], () => {
+    updateUrl();
+    loadProducts();
+  });
 </script>
 
 <template lang="pug">
@@ -86,15 +143,17 @@
       Search(
         :searchName="'Search products'"
         :placeholder="'Type product name or keywords...'"
+        :model-value="search"
         @update:search="search = $event; page = 0"
       )
-      CheckboxGroup(:options="filterOptions" @update:modelValue="onFiltersChange")
+      CheckboxGroup(:options="FILTERS_OPTIONS" :model-value="selectedFilters" @update:modelValue="onCheckboxChange")
       Select(
         :options="SORTING_OPTIONS"
         option-label="label"
         option-value="value"
+        :model-value="sortingValue"
         placeholder="Sort by"
-        @change="onSortingChange"
+        @update:model-value="onSortingChange"
       )
 
     .products__content

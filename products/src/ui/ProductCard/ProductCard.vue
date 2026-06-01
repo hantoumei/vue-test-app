@@ -36,7 +36,7 @@
         div(v-if="product.productIsNew").product-card__badge.product-card__badge--condition New
       .product-card__user
         img.product-card__user-avatar(:src="product.userImage" :alt="`${product.userName}'s avatar`")
-        span.product-card__user-name {{ product.userName }}
+        span.product-card__user-name(v-html="highlightText(product.userName)")
       p.product-card__description(v-html="highlightText(product.productDescription)")
       p.product-card__price ${{ product.productPrice }}
 </template>
